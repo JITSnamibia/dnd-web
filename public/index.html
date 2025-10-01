@@ -3,47 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D&D AI Multiplayer Adventure</title>
+    <title>D&D AI Adventure</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-light">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-8">
-                <h1 class="text-center mb-4">D&D AI Adventure - Multiplayer Realm</h1>
+                <h1 class="text-center mb-4">🎲 D&D AI Adventure</h1>
+                
                 <div id="login" class="alert alert-info">
                     <h4>Welcome, Traveler!</h4>
-                    <input type="text" id="username" class="form-control mb-2" placeholder="Character Name">
-                    <input type="text" id="char-class" class="form-control mb-2" placeholder="Class (e.g., Warrior)">
-                    <input type="number" id="char-hp" class="form-control mb-2" placeholder="Max HP (default 20)" value="20">
+                    <input type="text" id="username" class="form-control mb-2" placeholder="Character Name" maxlength="20">
+                    <input type="text" id="char-class" class="form-control mb-2" placeholder="Class (e.g., Warrior)" maxlength="20">
+                    <input type="number" id="char-hp" class="form-control mb-2" placeholder="Max HP" value="20" min="1" max="100">
                     <button class="btn btn-primary" onclick="createCharacter()">Join Adventure</button>
                 </div>
                 
                 <div id="game" style="display: none;">
                     <div class="character-sheet">
-                        <strong>Character:</strong> <span id="char-name"></span> | Class: <span id="char-class"></span> | HP: <span id="char-hp"></span> | Level: <span id="char-level">1</span> |
-                        Inventory: <span id="inventory">None</span> | Room: <span id="room"></span>
-                        <button class="btn btn-sm btn-secondary float-end" onclick="leaveRoom()">Leave</button>
+                        <strong>Character:</strong> <span id="char-name"></span> | 
+                        <strong>Class:</strong> <span id="char-class-display"></span> | 
+                        <strong>HP:</strong> <span id="char-hp-display"></span> | 
+                        <strong>Level:</strong> <span id="char-level">1</span> | 
+                        <strong>Inventory:</strong> <span id="inventory">None</span>
+                        <br>
+                        <strong>Room:</strong> <span id="room"></span>
+                        <button class="btn btn-sm btn-secondary float-end" onclick="leaveRoom()">Leave Room</button>
                     </div>
                     
-                    <div id="messages" class="border p-3 mb-3 bg-white" style="height: 400px; overflow-y: scroll;"></div>
+                    <div id="messages" class="border p-3 mb-3 bg-white"></div>
                     
                     <div class="input-group mt-3">
-                        <input type="text" id="input" class="form-control" placeholder="Your action (e.g., 'I attack the goblin')" onkeypress="if(event.key==='Enter') sendMessage();">
+                        <input type="text" id="input" class="form-control" placeholder="Describe your action..." onkeypress="if(event.key==='Enter') sendMessage();" maxlength="500">
                         <button class="btn btn-primary" onclick="sendMessage()">Send</button>
-                        <select id="die-type" class="form-select ms-2" style="width: auto;">
-                            <option value="d20">d20</option>
-                            <option value="d6">d6</option>
-                            <option value="d8">d8</option>
-                            <option value="d10">d10</option>
-                        </select>
-                        <input type="number" id="die-num" class="form-control ms-2" style="width: 80px;" value="1" min="1">
-                        <input type="number" id="die-mod" class="form-control ms-2" style="width: 80px;" value="0" placeholder="Mod">
-                        <button class="btn btn-success ms-2" onclick="rollDice()">Roll</button>
                     </div>
-                    <small class="text-muted">Tip: Use 'Group:' for party actions. AI DM handles resolutions.</small>
+                    
+                    <div class="input-group mt-2">
+                        <select id="die-type" class="form-select" style="width: 100px;">
+                            <option value="d20">d20</option>
+                            <option value="d12">d12</option>
+                            <option value="d10">d10</option>
+                            <option value="d8">d8</option>
+                            <option value="d6">d6</option>
+                            <option value="d4">d4</option>
+                        </select>
+                        <input type="number" id="die-num" class="form-control" style="width: 80px;" value="1" min="1" max="10" placeholder="# Dice">
+                        <input type="number" id="die-mod" class="form-control" style="width: 80px;" value="0" min="-10" max="10" placeholder="Modifier">
+                        <button class="btn btn-success" onclick="rollDice()">🎲 Roll</button>
+                    </div>
+                    
+                    <small class="text-muted d-block mt-2">Tip: Use 'Group:' or 'We' for party actions. AI DM responds to keywords like attack, investigate, cast, etc.</small>
                     
                     <div class="mt-3">
                         <h5>Players in Room</h5>
@@ -51,46 +62,77 @@
                     </div>
                 </div>
             </div>
+            
             <div class="col-md-4">
                 <h3>Active Rooms</h3>
-                <ul id="rooms-list" class="list-group"></ul>
-                <button class="btn btn-info mt-3" onclick="createRoom()">Create Room</button>
+                <ul id="rooms-list" class="list-group mb-3"></ul>
+                
+                <button class="btn btn-info w-100" onclick="toggleRoomCreation()">Create New Room</button>
+                
                 <div id="room-creation" style="display: none;" class="mt-2">
-                    <input type="text" id="new-room-name" class="form-control" placeholder="Room Name">
-                    <button class="btn btn-success mt-2" onclick="joinNewRoom()">Create & Join</button>
+                    <input type="text" id="new-room-name" class="form-control mb-2" placeholder="Room Name" maxlength="30">
+                    <button class="btn btn-success w-100" onclick="joinNewRoom()">Create & Join</button>
                 </div>
-                <button class="btn btn-secondary mt-3" onclick="toggleDarkMode()">Toggle Dark Mode</button>
             </div>
         </div>
     </div>
 
+    <!-- FIXED: Load socket.io BEFORE our script -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        const socket = io();
-        let username, charClass, character = {};
+        // FIXED: Declare ALL variables at the TOP of the script
+        let socket;
+        let username = '';
+        let charClass = '';
+        let character = {};
         let currentRoom = 'main_adventure';
+
+        // Initialize socket connection
+        try {
+            socket = io();
+            console.log('✅ Socket.io loaded successfully');
+        } catch (error) {
+            console.error('❌ Socket.io failed to load:', error);
+            alert('Failed to connect to server. Please refresh the page.');
+        }
 
         function showLogin() {
             document.getElementById('login').style.display = 'block';
             document.getElementById('game').style.display = 'none';
         }
 
+        function showGame() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+        }
+
         function createCharacter() {
             username = document.getElementById('username').value.trim();
             charClass = document.getElementById('char-class').value.trim();
             const maxHP = parseInt(document.getElementById('char-hp').value) || 20;
-            if (!username) return alert('Username required');
+            
+            if (!username) {
+                alert('Please enter a character name');
+                return;
+            }
 
-            socket.emit('create_character', { username, charClass, maxHP });
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('game').style.display = 'block';
+            socket.emit('create_character', { 
+                username: username, 
+                charClass: charClass, 
+                maxHP: maxHP 
+            });
+            
+            showGame();
             joinRoom(currentRoom);
         }
 
         function updateCharacterSheet() {
             document.getElementById('char-name').textContent = username;
-            document.getElementById('char-class').textContent = charClass;
-            document.getElementById('char-hp').textContent = `${character.hp}/${character.maxHp}`;
-            document.getElementById('char-level').textContent = character.level;
+            document.getElementById('char-class-display').textContent = charClass || 'Adventurer';
+            document.getElementById('char-hp-display').textContent = `${character.hp || 20}/${character.maxHp || 20}`;
+            document.getElementById('char-level').textContent = character.level || 1;
             document.getElementById('inventory').textContent = character.inventory?.join(', ') || 'None';
             document.getElementById('room').textContent = currentRoom;
         }
@@ -98,32 +140,48 @@
         function sendMessage() {
             const input = document.getElementById('input');
             const message = input.value.trim();
+            
             if (!message) return;
-            socket.emit('message', { message });
+            
+            socket.emit('message', { message: message });
             input.value = '';
         }
 
         function rollDice() {
             const dieType = document.getElementById('die-type').value;
             const num = parseInt(document.getElementById('die-num').value) || 1;
-            const mod = parseInt(document.getElementById('die-mod').value) || 0;
-            socket.emit('roll_dice', { dieType, num, modifier: mod });
+            const modifier = parseInt(document.getElementById('die-mod').value) || 0;
+            
+            socket.emit('roll_dice', { 
+                dieType: dieType, 
+                num: num, 
+                modifier: modifier 
+            });
         }
 
-        function createRoom() {
-            document.getElementById('room-creation').style.display = 'block';
+        function toggleRoomCreation() {
+            const div = document.getElementById('room-creation');
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
         }
 
         function joinNewRoom() {
             const roomName = document.getElementById('new-room-name').value.trim();
-            if (!roomName) return;
+            
+            if (!roomName) {
+                alert('Please enter a room name');
+                return;
+            }
+            
             currentRoom = roomName.replace(/\s+/g, '_').toLowerCase();
             document.getElementById('room-creation').style.display = 'none';
+            document.getElementById('new-room-name').value = '';
+            
             joinRoom(currentRoom);
         }
 
         function joinRoom(room) {
-            socket.emit('join', { room });
+            currentRoom = room;
+            socket.emit('join', { room: room });
             updateCharacterSheet();
         }
 
@@ -133,32 +191,44 @@
             joinRoom(currentRoom);
         }
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('bg-dark');
-            document.body.classList.toggle('text-light');
-        }
-
+        // Socket event listeners
         socket.on('message', (data) => {
             const messages = document.getElementById('messages');
             const isDM = data.username === 'DM';
-            const alertClass = isDM ? 'alert-warning' : 'alert-info';
-            messages.innerHTML += `<div class="alert ${alertClass} mt-2"><strong>${data.username}:</strong> ${data.message}</div>`;
+            const isSystem = data.username === 'System';
+            const alertClass = isDM ? 'alert-warning' : (isSystem ? 'alert-secondary' : 'alert-info');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `alert ${alertClass} mt-2 p-2`;
+            messageDiv.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+            
+            messages.appendChild(messageDiv);
             messages.scrollTop = messages.scrollHeight;
         });
 
         socket.on('room_update', (data) => {
             const list = document.getElementById('rooms-list');
             list.innerHTML = '';
-            for (const [room, info] of Object.entries(data.rooms)) {
+            
+            for (const [room, info] of Object.entries(data.rooms || {})) {
                 const item = document.createElement('li');
-                item.classList.add('list-group-item', room === currentRoom ? 'active' : '');
-                item.textContent = `${room} (${info.players} players)`;
+                item.className = `list-group-item ${room === currentRoom ? 'active' : ''}`;
+                item.textContent = `${room} (${info.players} player${info.players !== 1 ? 's' : ''})`;
+                item.style.cursor = 'pointer';
                 item.onclick = () => {
-                    currentRoom = room;
-                    joinRoom(room);
+                    if (room !== currentRoom) {
+                        currentRoom = room;
+                        joinRoom(room);
+                    }
                 };
                 list.appendChild(item);
             }
+        });
+
+        socket.on('character_created', (data) => {
+            character = data.character;
+            charClass = data.character.class;
+            updateCharacterSheet();
         });
 
         socket.on('character_update', (data) => {
@@ -168,17 +238,38 @@
 
         socket.on('player_list', (players) => {
             const list = document.getElementById('player-list');
-            list.innerHTML = players.map(p => `<li class="list-group-item">${p}</li>`).join('');
+            list.innerHTML = '';
+            
+            players.forEach(player => {
+                const item = document.createElement('li');
+                item.className = 'list-group-item';
+                item.textContent = player;
+                list.appendChild(item);
+            });
         });
 
-        socket.on('error', (msg) => alert(msg));
+        socket.on('error', (msg) => {
+            alert('Error: ' + msg);
+        });
 
-        // Init
+        socket.on('connect', () => {
+            console.log('✅ Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('❌ Disconnected from server');
+        });
+
+        // Initialize
         showLogin();
-        fetch('/api/rooms').then(res => res.json()).then(data => {
-            socket.emit('room_update', { rooms: data });
-        });
+        
+        // Load initial rooms
+        fetch('/api/rooms')
+            .then(res => res.json())
+            .then(data => {
+                socket.emit('room_update', { rooms: data });
+            })
+            .catch(err => console.error('Failed to load rooms:', err));
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
