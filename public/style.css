@@ -1,0 +1,22 @@
+#messages { 
+    height: 500px; 
+    overflow-y: scroll; 
+    background: #f8f9fa; 
+    border: 1px solid #dee2e6; 
+    padding: 10px; 
+    font-family: 'Georgia', serif; /* D&D-inspired font */
+}
+.character-sheet { 
+    background: #e9ecef; 
+    padding: 10px; 
+    margin: 10px 0; 
+    border-radius: 5px; 
+    font-weight: bold;
+}
+.dice-btn { 
+    margin-left: 5px; 
+}
+body { 
+    font-family: 'Georgia', serif; 
+}
+.alert-secondary { background-color: #6c757d !important; }
