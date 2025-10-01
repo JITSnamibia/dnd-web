@@ -1,0 +1,42 @@
+#messages {
+    height: 400px;
+    overflow-y: scroll;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    font-family: 'Georgia', serif;
+}
+
+.character-sheet {
+    background: #e9ecef;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.dice-btn {
+    margin-left: 5px;
+}
+
+body {
+    font-family: 'Georgia', serif;
+}
+
+.alert-info {
+    background-color: #0dcaf0 !important;
+    color: black;
+}
+
+.list-group-item {
+    cursor: pointer;
+}
+
+.bg-dark #messages {
+    background: #333;
+    color: white;
+}
+
+.bg-dark .character-sheet {
+    background: #444;
+}
