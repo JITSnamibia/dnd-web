@@ -1,14 +1,13 @@
-# D&D AI Multiplayer Adventure Game
+# D&D AI Multiplayer Adventure Game (JS Version)
 
-A full-featured, web-based text adventure game in D&D style, powered by AI (OpenRouter API) as the Dungeon Master (DM). Supports multiplayer over the internet with real-time chat, character creation, dice rolls, inventory, and dynamic rooms.
+Web-based D&D-style game with AI DM via OpenRouter. Multiplayer via Socket.io.
 
 ## Features
-- **Responsive Web UI**: Bootstrap-based, works on desktop/mobile. No app install needed—browser only.
-- **Multiplayer**: Join/create rooms, see player counts, real-time messaging.
-- **AI DM**: Uses your chosen OpenRouter model to narrate stories, resolve actions/combats (D&D 5e-inspired).
-- **D&D Mechanics**: Character sheets (name, class, HP, inventory), client-side d20 rolls, simple loot.
-- **Self-Hostable**: Flask + SocketIO. Runs on any Python web host (e.g., Heroku, VPS).
+- Responsive HTML/JS UI with Bootstrap.
+- Real-time rooms, characters, dice (d20), inventory.
+- AI narrates actions/combats.
 
 ## Setup
-1. **Prerequisites**: Python 3.8+, Git (optional for cloning).
-2. **Install Dependencies**: s
+1. **Install Node.js**: v18+ from nodejs.org.
+2. **Clone/Add Files**: Place in `dnd_ai_game_js/`.
+3. **Install Deps**:
